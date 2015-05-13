@@ -4,6 +4,8 @@ import os
 from os.path import expanduser
 import sqlite3
 import win32crypt
+import csv
+import time
 import winshell
 
 
@@ -79,31 +81,44 @@ conn1 = sqlite3.connect(home)  # for expanduser attempt
 # conn1 = sqlite3.connect("C:\\Users\\Kat\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data")
 cursor = conn1.cursor()
 
+# csv attempt
+# csvFile = open('Chrome Passwords' + time.strftime("%d-%m-%Y_%H-%M-%S") + '.csv', 'w', newline='')  # , encoding='utf-8')
+# fileWriter = csv.writer(csvFile)  # , dialect=csv.excel  # TODO: delimiter or lineterminator? http://automatetheboringstuff.com/chapter14/
+# ## end csv attempt
 
-try:
-    # Before accessing Chrome file while in use, exit from all instances of Chrome.exe
-    print("Would you like me to force close Chrome? Yes/No") # TODO: Check if running before and after this. Before, then pose question; After, then wait some seconds?
-    answer = input()
-    if answer == "Yes" or answer == "yes":
-        os.system("taskkill /f /im chrome.exe >nul")
+txtFile = open('Chrome Passwords' + time.strftime("%d-%m-%Y_%H-%M-%S") + '.csv', 'w')
+# fileWriter =
+
+
+
+# Before accessing Chrome file while in use, exit from all instances of Chrome.exe
+# print("Would you like me to force close Chrome? Yes/No") # TODO: Check if running before and after this. Before, then pose question; After, then wait some seconds?
+# answer = input()
+# if answer == "Yes" or answer == "yes":
+os.system("taskkill /f /im chrome.exe >nul")
     # else:
     #     throw exception
 
+try:
     cursor.execute('SELECT action_url, username_value, password_value FROM logins')
     for result in cursor.fetchall():
         try:
             password = win32crypt.CryptUnprotectData(result[2],None,None,None,0)[1]
         except:
             print(result + "Decrypt Failed")
-        # TODO: Instead of print to console, save to CSV file. Perhaps in order (once) required by Firefox.
-        print('Site: ' + result[0])
-        print('Username: ' + result[1])
-        print("Password: " + password.decode('utf-8'))
 
+        # TODO: Instead of print to console, save to CSV file. Perhaps in order (once) required by Firefox.
+        # print('Site: ' + result[0])
+        # print('Username: ' + result[1])
+        # print("Password: " + password.decode('utf-8'))
+        # fileWriter.writeRow([result[0], result[1]])  # , password.decode('utf-8') # csv attempt
+        txtFile.write(result[0] + "," + result[1] + "," + password.decode('utf-8') + "\n")      #  password.decode('utf-8'),
     # print(cursor.fetchone())
 except:
     cursor.close()
     conn1.close()
+    # csvFile.close()
+    txtFile.close()
 # cursor.close()
 # conn1.close()
 
@@ -131,5 +146,5 @@ except:
 # conn.close()
 
 print("Ran fine!")
-input()
+# input()
 
